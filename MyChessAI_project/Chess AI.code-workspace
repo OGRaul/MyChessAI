@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "MyChessAI"
+		},
+		{
+			"path": "MyChessAI_NUnit-tests"
+		}
+	],
+	"settings": {}
+}

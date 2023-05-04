@@ -1,0 +1,2 @@
+/run/media/raul/Disco Duro Triste/Escritorio/Chess/My AI/Chess AI Project/Chess AI/bin/Release/net7.0/linux-x64/publish/Chess AI.pdb
+/run/media/raul/Disco Duro Triste/Escritorio/Chess/My AI/Chess AI Project/Chess AI/bin/Release/net7.0/linux-x64/publish/Chess AI
