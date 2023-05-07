@@ -2,15 +2,18 @@ using System;
 using Board;
 using Uci;
 using Moves;
+using Resources;
 
 namespace Menu
 {
     public static class MenuManager
     {
         static MoveInterpreter moveInterpreter = new MoveInterpreter();
+        
         public static void showMenu()
         {
-            System.Console.WriteLine("Welcome to Chess AI by ROG");
+            System.Console.WriteLine("Welcome to MyChessAI by ROG");
+
             while(true)
             {
                 System.Console.WriteLine("=====================================================");
@@ -20,25 +23,25 @@ namespace Menu
 
                 switch (command)
                 {
-                    case Command.HELP:
+                    case Commands.HELP:
                         listCommands();
                         break;
-                    case Command.SHOWBOARD:
+                    case Commands.SHOWBOARD:
                         BoardManager.drawBoard();
                         break;
-                    case Command.STARTAI:
+                    case Commands.STARTAI:
                         System.Console.WriteLine("AI should play the next move"); //TODO: for debug
                         //TODO: start the ai here on the current move
                         break;
-                    case Command.STARTUCI:
+                    case Commands.STARTUCI:
                         UciInterface.startUci();
                         break;
-                    case Command.ENTERFEN:
+                    case Commands.ENTERFEN:
                         System.Console.WriteLine("Type a valid FEN and hit enter");
                         string? fen = Console.ReadLine();
                         FenParser.loadPositionFromFen(fen);
                         break;
-                    case Command.EXIT:
+                    case Commands.EXIT:
                         System.Console.WriteLine("Closing...");
                         System.Environment.Exit(0); 
                         break;
@@ -64,7 +67,7 @@ namespace Menu
             System.Console.WriteLine("Listing commands");
             System.Console.WriteLine("-------------------------------------------");
             
-            Command.listCommands();
+            Commands.listCommands();
         }
     }
 }

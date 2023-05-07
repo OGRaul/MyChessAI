@@ -6,6 +6,7 @@ namespace Board
 {
     public static class FenParser
     {
+        //keeps location of the position on the board being handled by the loadPositionFromFen
         public static int currentPiece = 0;
         public const string STARTPOS = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -20,6 +21,13 @@ namespace Board
                 fen = STARTPOS;
             }
 
+            /*
+                Goes through the first part of the fen strings that determines 
+                the pieces position on the board.
+
+                The variable i stores the position on the fen string being handled
+                while currentPiece stores the position on the board being handled
+             */
             for (int i = 0; i < fen.Length; i++)
             {
                 //if its a blank space it asumes al pieces are set and extra fen info is now getting parsed
@@ -115,7 +123,14 @@ namespace Board
             currentPiece = 0;
         }
 
-        //interpretates the extra part of the fen, like: " w KQkq - 0 1" its the turn, castling rights, where is enpassant possible, how many turns without captures or pawn pushes (for 50 move rule) and the turn count
+        /*
+            Interpretates the extra part of the fen, like: " w KQkq - 0 1" 
+            Its the turn, castling rights, where is enpassant possible 
+            how many turns without captures or pawn pushes(for 50 move rule) and the turn count
+
+            This first part checks the turn part and sends the rest down to be handled by
+            other methods, always on the next space char
+        */
         private static void extraFenInfo(string fen, int startOfExtra)
         {
             //looks for whos turn it is
@@ -145,6 +160,7 @@ namespace Board
             }
         }
 
+        //handles the castling part of the fen string
         private static void extraFenInfoCastling(string fen, int startOfExtra)
         {
             //looks for who can castle and where
@@ -182,6 +198,7 @@ namespace Board
             }
         }
 
+        //handles the en passant part of the fen string
         private static void extraFenInfoEnPassant(string fen, int startOfExtra)
         {
             //gets the en passant part of the fen string as a separate string
@@ -248,6 +265,7 @@ namespace Board
             extraFenInfoFiftyMoveRulePart(fen, startOfExtra+enPassantPartOfFen.Length+1);
         }
 
+        //handles the 50 move rule part of the fen string
         private static void extraFenInfoFiftyMoveRulePart(string fen, int startOfExtra)
         {
             //gets the Fifty Move Rule part of the fen string as a separate string
@@ -291,6 +309,7 @@ namespace Board
             extraFenInfoTurnCountPart(fen, startOfExtra+fiftyMoveRulePartOfFen.Length+1);
         }
 
+        //handles the turn count part of the fen string
         private static void extraFenInfoTurnCountPart(string fen, int startOfExtra)
         {
             //gets the position after the fifty moves part to the end of the fen string
@@ -325,6 +344,7 @@ namespace Board
             }
         }
 
+        //if the fen string is invalid this gets thrown to let the player know what part is wrong
         private static void throwFenError(string motive)
         {
             System.Console.WriteLine(ErrorLogs.INVALIDFEN);
@@ -332,6 +352,7 @@ namespace Board
             throw new FormatException(); 
         }
 
+        //tests if a given char is located somewhere within a given string
         private static bool isCharPartOfAString(char charToTest, string validChars)
         {
             bool valid = false;
@@ -345,6 +366,7 @@ namespace Board
             return valid;
         }
 
+        //makes a fen string based on the current position on the board
         public static string loadFenFromPosition()
         {
             string newFen = "";

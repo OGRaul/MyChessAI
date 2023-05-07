@@ -4,24 +4,7 @@ using Resources;
 namespace Board
 {
     public static class BoardManager
-    {
-        //ranks
-        public static int[] firstRank = {56, 57, 58, 59, 60, 61, 62, 63};
-        public static int[] secondRank = {48, 49, 50, 51, 52, 53, 54, 55};
-        public static int[] thirdRank = {40, 41, 42, 43, 44, 45, 46, 47};
-        public static int[] fourthRank = {32, 33, 34, 35, 36, 37, 38, 39};
-        public static int[] fifthRank = {24, 25, 26, 27, 28, 29, 30, 31};
-        public static int[] sixthRank = {16, 17, 18, 19, 20, 21, 22, 23};
-        public static int[] seventhRank = {8, 9, 10, 11, 12, 13, 14, 15};
-        public static int[] eigthRank = {0, 1, 2, 3, 4, 5, 6, 7};
-
-        //A 2d array to easily get all ranks
-        public static int[][] ranks = 
-        {
-            firstRank, secondRank, thirdRank, fourthRank,
-            fifthRank, sixthRank, seventhRank, eigthRank
-        };
-                
+    {           
         public static char? promotion; //example: e7e8q (pawn moves to e8 an promotes to queen)
 
         //position info
@@ -233,6 +216,7 @@ namespace Board
             return moveMade;
         }
 
+        //gets the index position in the array of squares corresponding to the given algebraic position
         public static int coordinateToIndexPosition(int columnNumber, int fileNumber)
         {
             int square;
@@ -245,6 +229,7 @@ namespace Board
             return square;
         }
 
+        //converts a column letter to numeric value for use in algebraic positioning
         public static int columnLetterToNumber(char letter)
         {
             int columnNumber;
@@ -285,6 +270,7 @@ namespace Board
             return columnNumber;
         }
 
+        //changes whos turn it is
         public static void toggleTurn()
         {
             if(currentTurn == Piece.WHITE)
@@ -297,12 +283,21 @@ namespace Board
             }
         }
 
+        /*
+            since the chessboard first square is not the 1-1 algebraic position,
+            due to it being fliped, this corrects the file to the point where it should be
+        */
         public static int correctFile(int file)
         {
             file = (file *-1) + 8;
             return file;
         }
 
+        /*
+            Starts checking if its a legal move. This tests basic things that are needed
+            for any kind of move to be legal. If it passes, it sends the move further down
+            to check if its legal for the specific piece in the specific position.
+        */
         public static bool isLegalMove(int pieceToMove, int placeToMove, int endFile)
         {
             Square movingPiece = pieces[pieceToMove];
@@ -334,6 +329,7 @@ namespace Board
             return true;
         }
 
+        //divides the move by what piece is being move to check legality
         public static bool isValidForThisPiece(Square movingPiece, Square endSquare)
         {
             switch(Char.ToLower(movingPiece.piece))
@@ -357,6 +353,7 @@ namespace Board
             }
         }
 
+        //checks for legal pawn moves
         public static bool isValidPawnMove(Square movingPiece, Square endSquare)
         {
             int offset = endSquare.position - movingPiece.position; 
@@ -365,8 +362,8 @@ namespace Board
             if(promotion == null)
             {
                 List<int> promotionSquares = new List<int>();
-                promotionSquares.AddRange(ranks[0]);
-                promotionSquares.AddRange(ranks[7]);
+                promotionSquares.AddRange(Ranks.allRanks[0]);
+                promotionSquares.AddRange(Ranks.allRanks[7]);
                 
                 for(int i = 0; i < promotionSquares.Count; i++)
                 {
@@ -397,13 +394,24 @@ namespace Board
             {
                 return false;
             }
-            //if its a diagonal move and theres not an enemy piece there its forbidden too
+            //if its a diagonal move and theres not an enemy piece there its forbidden too (unless en passant is possible in that square)
             else if (offset == PositionOffsets.upLeft || offset == PositionOffsets.upRight) 
             {
-                //TODO: check for en passant
-                if(endSquare.color == Piece.COLORNONE || endSquare.color == currentTurn)
+                //if a piece of the same color ocupies that diagonal square its not legal
+                if( endSquare.color == currentTurn)
                 {
                     return false;
+                }
+                //if the diagonal square is emtpy checks for en passant
+                else if(endSquare.color == Piece.COLORNONE)
+                {   
+                    //if en passant is not possible in that square it is ilegal 
+                    if(enPassantSquare != null && endSquare.position != enPassantSquare.position)
+                    {
+                        return false;
+                    }
+
+                    //TODO: handle en passant and test the above check as well
                 }
             }
             //if it moves one square vertically and the square is not emtpy its also a legal move
@@ -438,6 +446,7 @@ namespace Board
             return true;
         }
 
+        //checks for valid knight moves
         public static bool isValidKnightMove(Square movingPiece, Square endSquare)
         {
             int offset = endSquare.position - movingPiece.position; 
@@ -454,41 +463,45 @@ namespace Board
             return false;
         }
 
+        //checks for valid bishop moves
         public static bool isValidBishopMove(Square movingPiece, Square endSquare)
         {
             return isValidSlidingPieceMove(movingPiece, endSquare, movingPiece.piece);
         }
 
+        //checks for valid rook moves
         public static bool isValidRookMove(Square movingPiece, Square endSquare)
         {
             return isValidSlidingPieceMove(movingPiece, endSquare, movingPiece.piece);
         }
 
+        //checks for valid queen moves
         public static bool isValidQueenMove(Square movingPiece, Square endSquare)
         {
             return isValidSlidingPieceMove(movingPiece, endSquare, movingPiece.piece);
         }
 
+        //handles the sliding pieces movement in one method due to how similar they all move
         public static bool isValidSlidingPieceMove(Square movingPiece, Square endSquare, char pieceType)
         {
             //on the base of what piece it is checks only those directions
             int[]? posibleDirections = null;
 
+            //checks for what piece it is and what directions that piece can legaly move to
             if(char.ToLower(pieceType) == Piece.QUEEN)
             {
                 posibleDirections = PositionOffsets.allDirections;
             }
-            else 
-            if(char.ToLower(pieceType)  == Piece.BISHOP)
+            else if(char.ToLower(pieceType)  == Piece.BISHOP)
             {
                 posibleDirections = PositionOffsets.diagonals;
             }
-            else 
-            if(char.ToLower(pieceType)  == Piece.ROOK)
+            else if(char.ToLower(pieceType)  == Piece.ROOK)
             {
                 posibleDirections = PositionOffsets.vertHorz;
             }
 
+            //if its none of the above pieces, then there was a mistake somewhere
             if(posibleDirections == null)
             {
                 System.Console.WriteLine(ErrorLogs.INVALIDMOVEDIRECTION);
@@ -537,6 +550,7 @@ namespace Board
             return false;
         }
 
+        //checks for valid king moves
         public static bool isValidKingMove(Square movingPiece, Square endSquare)
         {
             int offset = endSquare.position - movingPiece.position; 
@@ -580,6 +594,7 @@ namespace Board
             return false;
         }
 
+        //tests for checks to not make it possible to put your own king in check
         public static bool revealsCheck(Square movingPiece, Square endSquare)
         {
             //TODO: look for checks

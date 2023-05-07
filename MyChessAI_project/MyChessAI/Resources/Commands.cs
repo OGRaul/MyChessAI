@@ -1,8 +1,8 @@
 using System;
 
-namespace Menu
+namespace Resources
 {
-    public class Command
+    public class Commands
     {
         public const string HELP = "help";
         public const string MANHELP = "Lists all available commands and their definition";
@@ -10,7 +10,7 @@ namespace Menu
         public const string SHOWBOARD = "d";
         public const string MANSHOWBOARD = "Displays the current board";
 
-        public const string STARTAI = "on";
+        public const string STARTAI = "go";
         public const string MANSTARTAI = "Starts the AI on the current move";
 
         public const string STARTUCI = "uci";
