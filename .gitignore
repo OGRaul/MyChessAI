@@ -1,1 +1,5 @@
 Compiling_Options.txt
+MyChessAI_project/MyChessAI/bin
+MyChessAI_project/MyChessAI/obj
+MyChessAI_project/MyChessAI_NUnit-tests/bin
+MyChessAI_project/MyChessAI_NUnit-tests/obj
