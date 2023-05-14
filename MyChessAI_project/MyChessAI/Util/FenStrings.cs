@@ -1,4 +1,4 @@
-namespace Resources
+namespace Util
 {
     public static class FenStrings
     {
@@ -11,5 +11,7 @@ namespace Resources
         public const string ROOKTESTINGFEN = "2N3k1/4r3/n7/8/8/N2R4/1K3n2/8 w - - 0 32";
         public const string PROMOTIONTESTINGFEN = "bB5k/PP1P1p2/8/8/8/8/pp1p1P2/Bb5K w - - 0 12";
         public const string ENPASSANTTESTINGFEN = "r1bqkbnr/ppp1pppp/2n5/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3";
+        public const string CASTLINGTESTINGFEN = "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 21";
+        public const string CASTLINGBLOCKEDTESTINGFEN = "rB2kN1r/pppppppp/8/8/8/8/PPPPPPPP/R1N1K1BR w KQkq - 0 21";
     }
 }

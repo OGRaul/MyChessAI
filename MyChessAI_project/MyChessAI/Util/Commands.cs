@@ -1,6 +1,6 @@
 using System;
 
-namespace Resources
+namespace Util
 {
     public class Commands
     {

@@ -2,7 +2,7 @@ using System;
 using Board;
 using Uci;
 using Moves;
-using Resources;
+using Util;
 
 namespace Menu
 {

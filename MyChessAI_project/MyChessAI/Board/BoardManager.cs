@@ -1,17 +1,28 @@
 using Moves;
-using Resources;
+using Util;
 
 namespace Board
 {
     public static class BoardManager
     {           
+        public static bool isKingInCheck;
         public static char? promotion; //example: e7e8q (pawn moves to e8 an promotes to queen)
 
         //position info
+        public const int whiteKingPosition = 60;
+        public const int blackKingPosition = 4;
+        public const int leftBlackRookPosition = 0;
+        public const int rightBlackRookPosition = 7;
+        public const int leftWhiteRookPosition = 56;
+        public const int rightWhiteRookPosition = 63;
+
         public static bool canWhiteCastleKingside;
         public static bool canWhiteCastleQueenside;
         public static bool canBlackCastleKingside;
         public static bool canBlackCastleQueenside;
+        public static int castlingRookOffset = 0;
+        
+        public static bool isEnPassantMove;
         public static Square? enPassantSquare;
         public static Square? lastPieceMoved;        
         public static int currentTurn;
@@ -23,12 +34,15 @@ namespace Board
         public static void restartBoardVariables()
         {
             //resets castling rights
+            isKingInCheck = false;
             canWhiteCastleKingside = false;
             canWhiteCastleQueenside = false;
             canBlackCastleKingside = false;
-            canBlackCastleQueenside = false;;
+            canBlackCastleQueenside = false;
+            castlingRookOffset = 0;
 
             //resets en passant square and last piece moved
+            isEnPassantMove = false;
             enPassantSquare = null;
             lastPieceMoved = null;
 
@@ -80,6 +94,7 @@ namespace Board
             
             System.Console.WriteLine("Color of current turn(8 white, 16 black): "+currentTurn);
             
+            checkCastlingRights();
             System.Console.WriteLine("canWhiteCastleKingside: "+canWhiteCastleKingside);
             System.Console.WriteLine("canWhiteCastleQueenside: "+canWhiteCastleQueenside);
             System.Console.WriteLine("canBlackCastleKingside: "+canBlackCastleKingside);
@@ -94,7 +109,15 @@ namespace Board
 
         public static string makeMove(string move)
         {
+            //resets move specific variables
             promotion = null;
+            isEnPassantMove = false;
+            castlingRookOffset = 0;
+            isKingInCheck = false;
+
+            //TODO: is this efficient?
+            //checks before each move who can castle and where
+            checkCastlingRights();
 
             int startColumn, startFile, endColumn, endFile; //example: e2e4
 
@@ -159,15 +182,40 @@ namespace Board
             //saves the piece being moved
             char piece = pieces[pieceToMove].piece;
 
-            if(isLegalMove(pieceToMove, placeToMove, endFile)) //add endcolumn to check for promotions and en passant
+            if(isLegalMove(pieceToMove, placeToMove, endFile)) //added endFile to check for promotions and en passant
             {
-                //leaves previous square empty
-                pieces[pieceToMove] = new Square();
-                pieces[pieceToMove].position = pieceToMove;
-                
-                //places the piece on its new square, replacing what was in it previously
-                pieces[placeToMove].piece = piece;
-                pieces[placeToMove].hasMoved = true;
+                //handles castling moves
+                if(castlingRookOffset != 0) //if its a castling move
+                {
+                    //leaves previous square empty
+                    pieces[pieceToMove] = new Square();
+                    pieces[pieceToMove].position = pieceToMove;
+                    pieces[pieceToMove].hasMoved = true;
+                    
+                    //places the piece on its new square, replacing what was in it previously
+                    pieces[placeToMove].piece = piece;
+                    pieces[placeToMove].hasMoved = true;
+                    int newKingSquare = placeToMove;
+
+                    moveTheRook(newKingSquare);
+                }
+                //handles en passant moves
+                else if(isEnPassantMove)
+                {
+                    //TODO: handle en passant move
+                }
+                //handles regular moves
+                else
+                {
+                    //leaves previous square empty
+                    pieces[pieceToMove] = new Square();
+                    pieces[pieceToMove].position = pieceToMove;
+                    pieces[pieceToMove].hasMoved = true;
+                    
+                    //places the piece on its new square, replacing what was in it previously
+                    pieces[placeToMove].piece = piece;
+                    pieces[placeToMove].hasMoved = true;
+                }
 
                 if(Char.IsUpper(piece))
                 {
@@ -214,6 +262,78 @@ namespace Board
             turnCount++;
 
             return moveMade;
+        }
+
+        //moves the rook to its new position in castling
+        private static void moveTheRook(int newKingSquare)
+        {
+            //places the rook on its new correct position
+            if(castlingRookOffset == 1) //queen side
+            {
+                //if it is white
+                if(currentTurn == Piece.WHITE)
+                {
+                    //resets the square where the left rook was
+                    int oldpos = pieces[leftWhiteRookPosition].position;
+                    pieces[leftWhiteRookPosition] = new Square();
+                    pieces[leftWhiteRookPosition].position = oldpos;
+                    pieces[leftWhiteRookPosition].hasMoved = true;
+
+                    //sets the new square of the left rook
+                    int placeToMoveRook = newKingSquare+castlingRookOffset;
+                    pieces[placeToMoveRook].piece = Piece.ROOK;
+                    pieces[placeToMoveRook].color = Piece.WHITE;
+                    pieces[placeToMoveRook].hasMoved = true;
+                }
+                //if it is black
+                if(currentTurn == Piece.BLACK)
+                {
+                    //resets the square where the left rook was
+                    int oldpos = pieces[leftBlackRookPosition].position;
+                    pieces[leftBlackRookPosition] = new Square();
+                    pieces[leftBlackRookPosition].position = oldpos;
+                    pieces[leftBlackRookPosition].hasMoved = true;
+
+                    //sets the new square of the left rook
+                    int placeToMoveRook = newKingSquare+castlingRookOffset;
+                    pieces[placeToMoveRook].piece = Piece.ROOK;
+                    pieces[placeToMoveRook].color = Piece.BLACK;
+                    pieces[placeToMoveRook].hasMoved = true;
+                }
+            }
+            else if(castlingRookOffset == -1)
+            {
+                    //if it is white
+                if(currentTurn == Piece.WHITE)
+                {
+                    //resets the square where the left rook was
+                    int oldpos = pieces[rightWhiteRookPosition].position;
+                    pieces[rightWhiteRookPosition] = new Square();
+                    pieces[rightWhiteRookPosition].position = oldpos;
+                    pieces[rightWhiteRookPosition].hasMoved = true;
+
+                    //sets the new square of the left rook
+                    int placeToMoveRook = newKingSquare+castlingRookOffset;
+                    pieces[placeToMoveRook].piece = Piece.ROOK;
+                    pieces[placeToMoveRook].color = Piece.WHITE;
+                    pieces[placeToMoveRook].hasMoved = true;
+                }
+                //if it is black
+                if(currentTurn == Piece.BLACK)
+                {
+                    //resets the square where the left rook was
+                    int oldpos = pieces[rightBlackRookPosition].position;
+                    pieces[rightBlackRookPosition] = new Square();
+                    pieces[rightBlackRookPosition].position = oldpos;
+                    pieces[rightBlackRookPosition].hasMoved = true;
+
+                    //sets the new square of the left rook
+                    int placeToMoveRook = newKingSquare+castlingRookOffset;
+                    pieces[placeToMoveRook].piece = Piece.ROOK;
+                    pieces[placeToMoveRook].color = Piece.BLACK;
+                    pieces[placeToMoveRook].hasMoved = true;
+                }
+            }
         }
 
         //gets the index position in the array of squares corresponding to the given algebraic position
@@ -268,6 +388,88 @@ namespace Board
             }
 
             return columnNumber;
+        }
+
+        //checks castling rights for both colors
+        public static void checkCastlingRights()
+        {
+            canWhiteCastleQueenside = canWhiteQueenSideCastle();
+            canWhiteCastleKingside = canWhiteKingSideCastle();
+
+            canBlackCastleQueenside = canBlackQueenSideCastle();
+            canBlackCastleKingside = canBlackKingSideCastle();
+        }
+
+        private static bool canWhiteQueenSideCastle()
+        {
+            bool canCastle = true;
+
+            //checks movement of white king and rooks
+            if(pieces[whiteKingPosition].hasMoved)
+            {
+                canCastle = false;
+            }
+            //has the white queen side rook moved yet?
+            else if(pieces[leftWhiteRookPosition].hasMoved)
+            {
+                canCastle = false;
+            }
+
+            return canCastle;
+        }
+
+        private static bool canWhiteKingSideCastle()
+        {
+            bool canCastle = true;
+
+            //checks movement of black king and rooks
+            if(pieces[whiteKingPosition].hasMoved)
+            {
+                canCastle = false;
+            }
+            //has the white queen side rook moved yet?
+            else if(pieces[rightWhiteRookPosition].hasMoved)
+            {
+                canCastle = false;
+            }
+
+            return canCastle;
+        }
+
+        private static bool canBlackQueenSideCastle()
+        {
+            bool canCastle = true;
+
+            //checks movement of black king and rooks
+            if(pieces[blackKingPosition].hasMoved)
+            {
+                canCastle = false;
+            }
+            //has the white queen side rook moved yet?
+            else if(pieces[leftBlackRookPosition].hasMoved)
+            {
+                canCastle = false;
+            }
+
+            return canCastle;
+        }
+
+        private static bool canBlackKingSideCastle()
+        {
+            bool canCastle = true;
+
+            //checks movement of black king and rooks
+            if(pieces[blackKingPosition].hasMoved)
+            {
+                canCastle = false;
+            }
+            //has the white queen side rook moved yet?
+            else if(pieces[rightBlackRookPosition].hasMoved)
+            {
+                canCastle = false;
+            }
+
+            return canCastle;
         }
 
         //changes whos turn it is
@@ -406,7 +608,11 @@ namespace Board
                 else if(endSquare.color == Piece.COLORNONE)
                 {   
                     //if en passant is not possible in that square it is ilegal 
-                    if(enPassantSquare != null && endSquare.position != enPassantSquare.position)
+                    if(enPassantSquare == null)
+                    {
+                        return false;
+                    }
+                    else if(endSquare.position != enPassantSquare.position)
                     {
                         return false;
                     }
@@ -581,14 +787,95 @@ namespace Board
                 }
             }
 
-            //TODO: handle castling
-            if(currentTurn == Piece.WHITE)
+            //if the move is two squares to the left or right its castling. this checks if its legal
+            if(offset == PositionOffsets.rightOne*2 || offset == PositionOffsets.leftOne*2)
             {
-                
-            }
-            else if(currentTurn == Piece.BLACK)
-            {
+                //if the king is in check its not legal
+                if(isKingInCheck)
+                {
+                    return false;
+                }
 
+                //if it would collide with another piece its not legal
+                if(offset == PositionOffsets.rightOne*2)
+                {
+                    //if it would encounter another piece on its way or the king would be in check
+                    if(pieces[movingPiece.position+PositionOffsets.rightOne].piece != Piece.PIECENONE || revealsCheck(movingPiece, pieces[movingPiece.position+PositionOffsets.rightOne]))
+                    {
+                        return false;
+                    }
+                }
+                else if(offset == PositionOffsets.leftOne*2)
+                {
+                    //if it would encounter another piece on its way or the king would be in check
+                    if(pieces[movingPiece.position+PositionOffsets.leftOne].piece != Piece.PIECENONE || revealsCheck(movingPiece, pieces[movingPiece.position+PositionOffsets.leftOne]))
+                    {
+                        return false;
+                    } 
+                    //for queen side castling it also needs to check if there is something beside the rook
+                    else if(pieces[movingPiece.position+PositionOffsets.leftOne*3].piece != Piece.PIECENONE)
+                    {
+                        return false;
+                    }
+                }
+
+
+                //if its whites turn it returns castling rights queen and king side of white depending on direction of move
+                if(currentTurn == Piece.WHITE)
+                {
+                    if(offset == PositionOffsets.rightOne*2)
+                    {
+                        if(canWhiteCastleKingside)
+                        {
+                            castlingRookOffset = -1;
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else if(offset == PositionOffsets.leftOne*2)
+                    {
+                        if(canWhiteCastleQueenside)
+                        {
+                            castlingRookOffset = 1;
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                }
+                //if its blacks turn it returns castling rights queen and king side of black depending on direction of move
+                else if(currentTurn == Piece.BLACK)
+                {
+                     if(offset == PositionOffsets.rightOne*2)
+                    {
+                        if(canBlackCastleKingside)
+                        {
+                            castlingRookOffset = -1;
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else if(offset == PositionOffsets.leftOne*2)
+                    {
+                        if(canBlackCastleQueenside)
+                        {
+                            castlingRookOffset = +1;
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                }
             }
 
             return false;
@@ -598,6 +885,10 @@ namespace Board
         public static bool revealsCheck(Square movingPiece, Square endSquare)
         {
             //TODO: look for checks
+            
+            //TODO: look to see if the king is already in check and if it is save it here
+            //isKingInCheck = true;
+
             return false;
         }
     }

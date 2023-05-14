@@ -1,4 +1,4 @@
-namespace Resources
+namespace Util
 {
     public static class ErrorLogs
     {

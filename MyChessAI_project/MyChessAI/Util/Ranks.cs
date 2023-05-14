@@ -1,6 +1,6 @@
  using System;
 
-namespace Resources
+namespace Util
 {
     public static class Ranks
     {

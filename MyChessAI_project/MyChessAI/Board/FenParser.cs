@@ -1,6 +1,6 @@
 using System;
 using Moves;
-using Resources;
+using Util;
 
 namespace Board
 {
