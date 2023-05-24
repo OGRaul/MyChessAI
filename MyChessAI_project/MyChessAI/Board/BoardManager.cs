@@ -8,14 +8,6 @@ namespace Board
         public static bool isKingInCheck;
         public static char? promotion; //example: e7e8q (pawn moves to e8 an promotes to queen)
 
-        //position info
-        public const int whiteKingPosition = 60;
-        public const int blackKingPosition = 4;
-        public const int leftBlackRookPosition = 0;
-        public const int rightBlackRookPosition = 7;
-        public const int leftWhiteRookPosition = 56;
-        public const int rightWhiteRookPosition = 63;
-
         public static bool canWhiteCastleKingside;
         public static bool canWhiteCastleQueenside;
         public static bool canBlackCastleKingside;
@@ -86,13 +78,13 @@ namespace Board
             System.Console.WriteLine("a b c d e f g h");
         }
 
-        //TODO: for debug
         private static void printExtraFenData()
         {
             System.Console.WriteLine("---------------------------------");
             System.Console.WriteLine("DEBUG INFO: ");
             
-            System.Console.WriteLine("Color of current turn(8 white, 16 black): "+currentTurn);
+            string s = currentTurn == Piece.WHITE ? "White" : "Black";
+            System.Console.WriteLine("Color of current turn: "+s);
             
             checkCastlingRights();
             System.Console.WriteLine("canWhiteCastleKingside: "+canWhiteCastleKingside);
@@ -100,6 +92,7 @@ namespace Board
             System.Console.WriteLine("canBlackCastleKingside: "+canBlackCastleKingside);
             System.Console.WriteLine("canBlackCastleQueenside: "+canBlackCastleQueenside);
 
+            checkEnPassantSquare();
             System.Console.WriteLine("en passant square position: "+enPassantSquare?.position);
             
             System.Console.WriteLine("Turn count: "+turnCount);
@@ -116,8 +109,9 @@ namespace Board
             isKingInCheck = false;
 
             //TODO: is this efficient?
-            //checks before each move who can castle and where
+            //checks before each move who can castle and where and where en passant is possible
             checkCastlingRights();
+            checkEnPassantSquare();
 
             int startColumn, startFile, endColumn, endFile; //example: e2e4
 
@@ -132,7 +126,6 @@ namespace Board
 
             if(move.Length == 5)
             {
-
                 switch(move[4])
                 {
                     case 'q':
@@ -202,7 +195,21 @@ namespace Board
                 //handles en passant moves
                 else if(isEnPassantMove)
                 {
-                    //TODO: handle en passant move
+                    //leaves previous square empty
+                    pieces[pieceToMove] = new Square();
+                    pieces[pieceToMove].position = pieceToMove;
+                    pieces[pieceToMove].hasMoved = true;
+
+                    int offset = currentTurn == Piece.WHITE ? PositionOffsets.upOne : PositionOffsets.downOne;
+
+                    //leaves square of en passanted piece empty
+                    pieces[placeToMove+offset] = new Square();
+                    pieces[placeToMove+offset].position = pieceToMove;
+                    pieces[placeToMove+offset].hasMoved = true;
+
+                    //places the pawn on its new square
+                    pieces[placeToMove].piece = piece;
+                    pieces[placeToMove].hasMoved = true;
                 }
                 //handles regular moves
                 else
@@ -257,6 +264,9 @@ namespace Board
             
             System.Console.WriteLine(moveMade); //TODO: for debug
 
+            //makes sure the enPassant square is back to invalid
+            enPassantSquare = null;
+
             //toggles the turn
             toggleTurn();
             turnCount++;
@@ -274,10 +284,10 @@ namespace Board
                 if(currentTurn == Piece.WHITE)
                 {
                     //resets the square where the left rook was
-                    int oldpos = pieces[leftWhiteRookPosition].position;
-                    pieces[leftWhiteRookPosition] = new Square();
-                    pieces[leftWhiteRookPosition].position = oldpos;
-                    pieces[leftWhiteRookPosition].hasMoved = true;
+                    int oldpos = pieces[PiecePositions.leftWhiteRookPosition].position;
+                    pieces[PiecePositions.leftWhiteRookPosition] = new Square();
+                    pieces[PiecePositions.leftWhiteRookPosition].position = oldpos;
+                    pieces[PiecePositions.leftWhiteRookPosition].hasMoved = true;
 
                     //sets the new square of the left rook
                     int placeToMoveRook = newKingSquare+castlingRookOffset;
@@ -289,10 +299,10 @@ namespace Board
                 if(currentTurn == Piece.BLACK)
                 {
                     //resets the square where the left rook was
-                    int oldpos = pieces[leftBlackRookPosition].position;
-                    pieces[leftBlackRookPosition] = new Square();
-                    pieces[leftBlackRookPosition].position = oldpos;
-                    pieces[leftBlackRookPosition].hasMoved = true;
+                    int oldpos = pieces[PiecePositions.leftBlackRookPosition].position;
+                    pieces[PiecePositions.leftBlackRookPosition] = new Square();
+                    pieces[PiecePositions.leftBlackRookPosition].position = oldpos;
+                    pieces[PiecePositions.leftBlackRookPosition].hasMoved = true;
 
                     //sets the new square of the left rook
                     int placeToMoveRook = newKingSquare+castlingRookOffset;
@@ -307,10 +317,10 @@ namespace Board
                 if(currentTurn == Piece.WHITE)
                 {
                     //resets the square where the left rook was
-                    int oldpos = pieces[rightWhiteRookPosition].position;
-                    pieces[rightWhiteRookPosition] = new Square();
-                    pieces[rightWhiteRookPosition].position = oldpos;
-                    pieces[rightWhiteRookPosition].hasMoved = true;
+                    int oldpos = pieces[PiecePositions.rightWhiteRookPosition].position;
+                    pieces[PiecePositions.rightWhiteRookPosition] = new Square();
+                    pieces[PiecePositions.rightWhiteRookPosition].position = oldpos;
+                    pieces[PiecePositions.rightWhiteRookPosition].hasMoved = true;
 
                     //sets the new square of the left rook
                     int placeToMoveRook = newKingSquare+castlingRookOffset;
@@ -322,10 +332,10 @@ namespace Board
                 if(currentTurn == Piece.BLACK)
                 {
                     //resets the square where the left rook was
-                    int oldpos = pieces[rightBlackRookPosition].position;
-                    pieces[rightBlackRookPosition] = new Square();
-                    pieces[rightBlackRookPosition].position = oldpos;
-                    pieces[rightBlackRookPosition].hasMoved = true;
+                    int oldpos = pieces[PiecePositions.rightBlackRookPosition].position;
+                    pieces[PiecePositions.rightBlackRookPosition] = new Square();
+                    pieces[PiecePositions.rightBlackRookPosition].position = oldpos;
+                    pieces[PiecePositions.rightBlackRookPosition].hasMoved = true;
 
                     //sets the new square of the left rook
                     int placeToMoveRook = newKingSquare+castlingRookOffset;
@@ -400,17 +410,84 @@ namespace Board
             canBlackCastleKingside = canBlackKingSideCastle();
         }
 
+        //checks if enpassant is possible and if it is where is it
+        public static void checkEnPassantSquare()
+        {
+            //if the last piece moved was a pawn checks to the side of the pawns
+            if(lastPieceMoved != null && Char.ToLower(lastPieceMoved.piece) == Piece.PAWN)
+            {
+                //if the turn is white the enPassantRank is the fifth, otherwise its the fourth
+                int[] enPassantRank = currentTurn == Piece.WHITE ? Ranks.fifthRank : Ranks.fourthRank;
+
+                System.Console.WriteLine(enPassantRank.First());
+
+                if(isPieceInRank(lastPieceMoved, enPassantRank))
+                {
+                    int positionRightOfPawnMoved = lastPieceMoved.position + PositionOffsets.rightOne;
+                    int positionLeftOfPawnMoved = lastPieceMoved.position + PositionOffsets.leftOne;
+                    
+                    Square? squareRightOfPawnMoved = null;
+                    Square? squareLeftOfPawnMoved = null;
+                    
+                    //checks if the square right from the last piece moved is in the same rank
+                    if(isItTheSameRank(lastPieceMoved.position, positionRightOfPawnMoved, enPassantRank))
+                    {
+                        squareRightOfPawnMoved = pieces[positionRightOfPawnMoved];
+                    }
+
+                    //checks if the square left from the last piece moved is in the same rank
+                    if(isItTheSameRank(lastPieceMoved.position, positionLeftOfPawnMoved, enPassantRank))
+                    {
+                        squareLeftOfPawnMoved = pieces[positionLeftOfPawnMoved];
+                    }
+
+                    //the square above the last pawn moved
+                    int upOfPawnMoved = currentTurn == Piece.WHITE ? lastPieceMoved.position + PositionOffsets.downOne : lastPieceMoved.position + PositionOffsets.upOne;
+                    
+                    //if the square right of the last pawn moved by oponent is a pawn of the current turns color
+                    if(squareRightOfPawnMoved != null && Char.ToLower(squareRightOfPawnMoved.piece) == Piece.PAWN && squareRightOfPawnMoved.color == currentTurn)
+                    {
+                        //the en passant square is set to the squre right above the last moved pawn
+                        enPassantSquare = pieces[upOfPawnMoved];
+                    }
+                    //else if the square right of the last pawn moved by oponent is a pawn of the current turns color
+                    else if(squareLeftOfPawnMoved != null && Char.ToLower(squareLeftOfPawnMoved.piece) == Piece.PAWN && squareLeftOfPawnMoved.color == currentTurn)
+                    {
+                        //the en passant square is set to the squre right above the last moved pawn
+                        enPassantSquare = pieces[upOfPawnMoved];
+                    }
+                    else
+                    {
+                        enPassantSquare = null;
+                    }
+                }
+            }
+        }
+
+        private static bool isPieceInRank(Square piece, int[] rank)
+        {
+            for(int i = 0; i < rank.Length; i++)
+            {
+                if(piece.position == rank[i])
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private static bool canWhiteQueenSideCastle()
         {
             bool canCastle = true;
 
             //checks movement of white king and rooks
-            if(pieces[whiteKingPosition].hasMoved)
+            if(pieces[PiecePositions.whiteKingPosition].hasMoved)
             {
                 canCastle = false;
             }
             //has the white queen side rook moved yet?
-            else if(pieces[leftWhiteRookPosition].hasMoved)
+            else if(pieces[PiecePositions.leftWhiteRookPosition].hasMoved)
             {
                 canCastle = false;
             }
@@ -418,17 +495,38 @@ namespace Board
             return canCastle;
         }
 
+        private static bool isItTheSameRank(int firstPos, int secondPos, int[] rank)
+        {
+            bool isFirstPosInRank = false;
+            bool isSecondPosInRank = false;
+
+            for(int i = 0; i < 8; i++)
+            {
+                if(firstPos == rank[i])
+                {
+                    isFirstPosInRank = true;
+                }
+
+                if(secondPos == rank[i])
+                {
+                    isSecondPosInRank = true;
+                }
+            }
+
+            return isFirstPosInRank && isSecondPosInRank;
+        }
+
         private static bool canWhiteKingSideCastle()
         {
             bool canCastle = true;
 
             //checks movement of black king and rooks
-            if(pieces[whiteKingPosition].hasMoved)
+            if(pieces[PiecePositions.whiteKingPosition].hasMoved)
             {
                 canCastle = false;
             }
             //has the white queen side rook moved yet?
-            else if(pieces[rightWhiteRookPosition].hasMoved)
+            else if(pieces[PiecePositions.rightWhiteRookPosition].hasMoved)
             {
                 canCastle = false;
             }
@@ -441,12 +539,12 @@ namespace Board
             bool canCastle = true;
 
             //checks movement of black king and rooks
-            if(pieces[blackKingPosition].hasMoved)
+            if(pieces[PiecePositions.blackKingPosition].hasMoved)
             {
                 canCastle = false;
             }
             //has the white queen side rook moved yet?
-            else if(pieces[leftBlackRookPosition].hasMoved)
+            else if(pieces[PiecePositions.leftBlackRookPosition].hasMoved)
             {
                 canCastle = false;
             }
@@ -459,12 +557,12 @@ namespace Board
             bool canCastle = true;
 
             //checks movement of black king and rooks
-            if(pieces[blackKingPosition].hasMoved)
+            if(pieces[PiecePositions.blackKingPosition].hasMoved)
             {
                 canCastle = false;
             }
             //has the white queen side rook moved yet?
-            else if(pieces[rightBlackRookPosition].hasMoved)
+            else if(pieces[PiecePositions.rightBlackRookPosition].hasMoved)
             {
                 canCastle = false;
             }
@@ -599,13 +697,8 @@ namespace Board
             //if its a diagonal move and theres not an enemy piece there its forbidden too (unless en passant is possible in that square)
             else if (offset == PositionOffsets.upLeft || offset == PositionOffsets.upRight) 
             {
-                //if a piece of the same color ocupies that diagonal square its not legal
-                if( endSquare.color == currentTurn)
-                {
-                    return false;
-                }
                 //if the diagonal square is emtpy checks for en passant
-                else if(endSquare.color == Piece.COLORNONE)
+                if(endSquare.color == Piece.COLORNONE)
                 {   
                     //if en passant is not possible in that square it is ilegal 
                     if(enPassantSquare == null)
@@ -616,8 +709,10 @@ namespace Board
                     {
                         return false;
                     }
-
-                    //TODO: handle en passant and test the above check as well
+                    else if(endSquare.position == enPassantSquare.position)
+                    {
+                        isEnPassantMove = true;
+                    }
                 }
             }
             //if it moves one square vertically and the square is not emtpy its also a legal move
