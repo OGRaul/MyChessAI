@@ -1,6 +1,7 @@
 using MyChessAI;
 using Board;
 using Moves;
+using Util;
 
 namespace Tests
 {
@@ -60,7 +61,7 @@ namespace Tests
             FenParser.loadPositionFromFen(fen);
 
             //TODO: makes it so black starts even when it should be whites turn by the fen strings directions
-            BoardManager.currentTurn = Piece.BLACK; 
+            BoardManager.currentTurnColor = Piece.BLACK; 
 
             string result = BoardManager.makeMove(move);
 
@@ -90,6 +91,37 @@ namespace Tests
             var result = moveInterpreter.isValidMove(move);
 
             Assert.IsFalse(result, $"{move} should be invalid!");
+        }
+
+        [TestCase("a8", 0)] 
+        [TestCase("h1", 63)] 
+        [TestCase("g1", 62)] 
+        [TestCase("b1", 57)] 
+        [TestCase("a7", 8)] 
+        [TestCase("b8", 1)] 
+        public void AssertIsCorrectCoordinateString(string expResult, int index)
+        {
+            var result = MoveGenerator.indexPositionToCoordinate(index);
+
+            Assert.AreEqual(expResult, result, "error las coordenadas recibidas: "+result+" no son las coordenadas esperadas: "+expResult);
+        }
+
+        [TestCase("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", null, null)] 
+        [TestCase(FenStrings.ENPASSANTTESTINGFEN, "r1bqkbnr/ppp1pppp/2n5/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3", null)] 
+        [TestCase(FenStrings.ROOKTESTINGFEN, "2N3k1/4r3/n7/8/8/N2R4/1K3n2/8 b - - 10 32", null)] 
+        [TestCase(FenStrings.QUEENTESTINGFEN, "1k6/2n2q2/6n1/8/3Q4/3P4/5N2/1K6 w - - 0 98", null)] 
+        public void AssertIsCorrectPositionToFEN(string expFEN, string? testingFEN, string? move)
+        {
+            FenParser.loadPositionFromFen(testingFEN);
+
+            if(move != null)
+            {
+                BoardManager.makeMove(move);
+            }
+
+            var result = FenParser.createFenFromPosition();
+
+            Assert.AreEqual(expFEN, result, "error el fen recibido: "+result+" no es el fen esperado: "+expFEN);
         }
     }
 }

@@ -142,16 +142,16 @@ namespace Board
                         extraFenInfoCastling(fen, i+1);
                         return;
                     case 'w':
-                        BoardManager.currentTurn = Piece.WHITE;
+                        BoardManager.currentTurnColor = Piece.WHITE;
                         break;
                     case 'W':
-                        BoardManager.currentTurn = Piece.WHITE;
+                        BoardManager.currentTurnColor = Piece.WHITE;
                         break;
                     case 'b':
-                        BoardManager.currentTurn = Piece.BLACK;
+                        BoardManager.currentTurnColor = Piece.BLACK;
                         break;
                     case 'B':
-                        BoardManager.currentTurn = Piece.BLACK;
+                        BoardManager.currentTurnColor = Piece.BLACK;
                         break;
                     default:
                         throwFenError(ErrorLogs.TURNPARTOFFEN+ErrorLogs.NONVALIDCHAR);
@@ -367,14 +367,158 @@ namespace Board
         }
 
         //makes a fen string based on the current position on the board
-        public static string loadFenFromPosition()
+        public static string createFenFromPosition()
         {
             string newFen = "";
 
-            //TODO: create loadFenFromPosition method
+            //does the main part (the pieces) of the fen string
+            newFen += getPositionOfPieces();
             
+            //adds the turn part of the fen string (spaces before and after)
+            newFen += BoardManager.currentTurnColor == Piece.WHITE ? " w " : " b ";
+
+            //adds the castling rights part 
+            newFen += getCastlingRightsPart(); //adds no spaces
+
+            //adds the en passant part of the fen string
+            newFen += " "; //adds the white space before
+            //En passant part
+            newFen += getEnPassantPart();
+            newFen += " "; //adds the white space after
+
+            //adds the 50 move rule part  of the fen string
+            newFen += BoardManager.movesSinceLastProgress; //adds no spaces
+
+            //adds the turn count part of the fen string
+            newFen += " "; //adds the white space before
+            newFen += BoardManager.turnCount; 
 
             return newFen;
+        }
+
+        private static string getEnPassantPart()
+        {
+            string enPassantPart = "";
+
+            //if en passant is not possible its a -
+            if(BoardManager.enPassantSquare == null)
+            {
+                enPassantPart += "-";
+            }
+            //other wise its the position in short algebraic form (e4)
+            else
+            {
+                enPassantPart += MoveGenerator.indexPositionToCoordinate(BoardManager.enPassantSquare.position);
+            }
+
+            return enPassantPart;
+        }
+
+        //adds the castling rights part (no spaces)
+        private static string getCastlingRightsPart()
+        {
+            string castlingRights = "";
+            BoardManager.checkCastlingRights();
+
+            if(BoardManager.canWhiteCastleKingside)
+            {
+                castlingRights+= "K";
+            }
+            if(BoardManager.canWhiteCastleQueenside)
+            {
+                castlingRights+= "Q";
+            }
+            if(BoardManager.canBlackCastleKingside)
+            {
+                castlingRights+= "k";
+            }
+            if(BoardManager.canBlackCastleQueenside)
+            {
+                castlingRights+= "q";
+            }
+
+            //if no one can castle anywhere a - is given
+            if(castlingRights == "")
+            {
+                castlingRights+= "-";
+            }
+
+            return castlingRights;
+        }
+
+        private static string getPositionOfPieces()
+        {
+            string positions = "";
+            int consecutiveEmptySquares = 0;
+            
+            for(int i = 0; i < BoardManager.pieces.Length; i++)
+            {
+                Square currentSquare = BoardManager.pieces[i];
+
+                if(i % 8 == 0 && i != 0 && i != 63)
+                {
+                    if(consecutiveEmptySquares != 0)
+                    {
+                        positions += consecutiveEmptySquares;
+                        consecutiveEmptySquares = 0;
+                    }
+
+                    positions+='/';
+                }
+
+                if(currentSquare.piece != Piece.PIECENONE)
+                {
+                    //resets the consecutive empty squares
+                    consecutiveEmptySquares = 0;
+
+                    //looks for the color
+                    bool isWhite = currentSquare.color == Piece.WHITE;
+
+                    switch(Char.ToLower(currentSquare.piece))
+                    {
+                        case Piece.PAWN:
+                            positions += isWhite ? 'P' : 'p';
+                            break;
+                        case Piece.KNIGHT:
+                            positions += isWhite ? 'N' : 'n';
+                            break;
+                        case Piece.BISHOP:
+                            positions += isWhite ? 'B' : 'b';
+                            break;
+                        case Piece.ROOK:
+                            positions += isWhite ? 'R' : 'r';
+                            break;
+                        case Piece.QUEEN:
+                            positions += isWhite ? 'Q' : 'q';
+                            break;
+                        case Piece.KING:
+                            positions += isWhite ? 'K' : 'k';
+                            break;
+                        default:
+                            throwFenError(ErrorLogs.MAINPARTOFFEN+ErrorLogs.NONVALIDCHAR);
+                            Environment.Exit(1);
+                            break;
+                    }
+                }
+                else
+                {
+                    consecutiveEmptySquares++;
+
+                    //if its empty and the next one is not it prints it
+                    if(i+1 <= 63 && BoardManager.pieces[i+1].piece != Piece.PIECENONE)
+                    {
+                        positions += consecutiveEmptySquares;
+
+                        //resets the empty squares
+                        consecutiveEmptySquares = 0;
+                    }
+                    else if(i+1 > 63)
+                    {
+                        positions += consecutiveEmptySquares;
+                    }
+                }
+            }
+            return positions;
         }
     }
 }

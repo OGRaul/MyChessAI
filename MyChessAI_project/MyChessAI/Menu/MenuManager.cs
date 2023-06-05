@@ -41,6 +41,9 @@ namespace Menu
                         string? fen = Console.ReadLine();
                         FenParser.loadPositionFromFen(fen);
                         break;
+                    case Commands.GETFEN:
+                        System.Console.WriteLine(FenParser.createFenFromPosition()); 
+                        break;
                     case Commands.EXIT:
                         System.Console.WriteLine("Closing...");
                         System.Environment.Exit(0); 

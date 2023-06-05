@@ -19,16 +19,19 @@ namespace Util
         public const string ENTERFEN = "fen";
         public const string MANENTERFEN = "Allows the user to enter a chess position using FEN";
 
+        public const string GETFEN = "get";
+        public const string MANGETFEN = "Gives the FEN string from the current chess position";
+
         public const string EXIT = "exit";
         public const string MANEXIT = "Closes the program";
 
         public static string[,] listCommands()
         {
-            //string[] commands = {HELP, SHOWBOARD, STARTUCI, ENTERFEN, EXIT};
-            string[,] commands = new string[6, 2] 
+            //string[] commands = {HELP, SHOWBOARD, STARTUCI, ENTERFEN, GETFEN, EXIT};
+            string[,] commands = new string[7, 2] 
             {
                 {HELP, MANHELP}, {SHOWBOARD, MANSHOWBOARD}, {STARTAI, MANSTARTAI}, {STARTUCI, MANSTARTUCI},
-                {ENTERFEN, MANENTERFEN}, {EXIT, MANEXIT}
+                {ENTERFEN, MANENTERFEN}, {GETFEN, MANGETFEN}, {EXIT, MANEXIT}
             };
 
             for(int i = 0; i < commands.GetLength(0); i++)
