@@ -3,6 +3,7 @@ using Board;
 using Uci;
 using Moves;
 using Util;
+using Engine;
 
 namespace Menu
 {
@@ -31,7 +32,7 @@ namespace Menu
                         break;
                     case Commands.STARTAI:
                         System.Console.WriteLine("AI should play the next move"); //TODO: for debug
-                        //TODO: start the ai here on the current move
+                        AI.makeEngineMove();
                         break;
                     case Commands.STARTUCI:
                         UciInterface.startUci();

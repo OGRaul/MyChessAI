@@ -6,6 +6,8 @@ namespace Util
         public const string NONVALIDMOVE = "Not a valid move";
         public const string NONVALIDMOVEGENERATED = "A non valid move has been generated";
         public const string ILEGALMOVE = "ilegal move!";
+        public const string MOVEBEINGCHECKEDNULL = "Move being checked is null";
+        public const string INTERNALCALCULATIONERROR = "An ilegal move has been created internally";
         public const string INVALIDFEN = "Invalid FEN";
         public const string PIECEDOESNOTEXIST = "Error piece of this type does not exist";
         public const string INVALIDMOVEDIRECTION = "Error wrong direction moves";

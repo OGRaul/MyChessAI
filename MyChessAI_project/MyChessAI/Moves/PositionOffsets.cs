@@ -20,17 +20,17 @@ namespace Moves
 
         public static int[] horseDirections = 
         {
-            (upOne*2) + leftOne, //0 upleft
-            (upOne*2) + rightOne, //1 upright
+            (upOne*2) + leftOne, //0 upupleft
+            (upOne*2) + rightOne, //1 upupright
 
-            (downOne*2) + leftOne, //2 downleft
-            (downOne*2) + rightOne, //3 downright
+            (downOne*2) + leftOne, //2 downdownleft
+            (downOne*2) + rightOne, //3 downdownright
 
-            (rightOne*2) + upOne, //4 righup
-            (rightOne*2) + downOne, //5 rightdown
+            (rightOne*2) + upOne, //4 righrightup
+            (rightOne*2) + downOne, //5 rightrightdown
 
-            (leftOne*2) + upOne, //6 leftup
-            (leftOne*2) + downOne //7 leftdown
+            (leftOne*2) + upOne, //6 leftleftup
+            (leftOne*2) + downOne //7 leftleftdown
         };
 
         public static int getNumSquaresToEdge(int position, int direction)

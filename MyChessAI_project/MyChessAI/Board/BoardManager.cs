@@ -5,9 +5,6 @@ namespace Board
 {
     public static class BoardManager
     {           
-        public static bool isKingInCheck;
-        //public static char? promotion; //example: e7e8q (pawn moves to e8 an promotes to queen)
-
         public static bool canWhiteCastleKingside;
         public static bool canWhiteCastleQueenside;
         public static bool canBlackCastleKingside;
@@ -21,12 +18,15 @@ namespace Board
         public static int turnCount = 1;
         public static int movesSinceLastProgress = 0;
         public static string moveHistory = "";
+        public static string? moveBeingCurrentlyChecked;
         public static Square[] pieces = new Square[64];
 
         public static void restartBoardVariables()
         {
+            //resets the move being checked to null
+            moveBeingCurrentlyChecked = null;
+
             //resets castling rights
-            isKingInCheck = false;
             canWhiteCastleKingside = false;
             canWhiteCastleQueenside = false;
             canBlackCastleKingside = false;
@@ -82,6 +82,8 @@ namespace Board
         {
             System.Console.WriteLine("---------------------------------");
             System.Console.WriteLine("DEBUG INFO: ");
+
+            System.Console.WriteLine("isKingInCheck: "+isKingInCheck()); //TODO: remove this
             
             string s = currentTurnColor == Piece.WHITE ? "White" : "Black";
             System.Console.WriteLine("Color of current turn: "+s);
@@ -107,7 +109,7 @@ namespace Board
             char? promotion = null;
             isEnPassantMove = false;
             castlingRookOffset = 0;
-            isKingInCheck = false;
+            moveBeingCurrentlyChecked = null;
 
             int startColumn, startFile, endColumn, endFile; //example: e2e4
 
@@ -171,6 +173,9 @@ namespace Board
             
             //saves the piece being moved
             char piece = pieces[pieceToMove].piece;
+
+            //saves the move being checked on;
+            moveBeingCurrentlyChecked = move;
 
             if(isLegalMove(pieceToMove, placeToMove, endFile, promotion)) //added endFile to check for promotions and en passant
             {
@@ -278,6 +283,9 @@ namespace Board
 
             //makes sure the enPassant square is back to invalid
             enPassantSquare = null;
+
+            //resets the move being checked to null
+            moveBeingCurrentlyChecked = null;
 
             //toggles the turn
             toggleTurn();
@@ -429,8 +437,6 @@ namespace Board
             {
                 //if the turn is white the enPassantRank is the fifth, otherwise its the fourth
                 int[] enPassantRank = currentTurnColor == Piece.WHITE ? Ranks.fifthRank : Ranks.fourthRank;
-
-                System.Console.WriteLine(enPassantRank.First());
 
                 if(isPieceInRank(lastPieceMoved, enPassantRank))
                 {
@@ -636,7 +642,6 @@ namespace Board
             //restablishes all move specific variables
             isEnPassantMove = false;
             castlingRookOffset = 0;
-            isKingInCheck = false;
 
             //TODO: is this efficient?
             //checks before finding out the legality of a move who can castle and where and where en passant is possible
@@ -646,6 +651,11 @@ namespace Board
             Square movingPiece = pieces[pieceToMove];
             Square endSquare = pieces[placeToMove];
 
+            
+            if(Char.ToLower(movingPiece.piece) != Piece.PAWN && promotion != null)
+            {
+                return false;
+            }
             //checks that the player is not moving a piece of the wrong color
             if(movingPiece.color != currentTurnColor)
             {
@@ -711,6 +721,25 @@ namespace Board
                 for(int i = 0; i < promotionSquares.Count; i++)
                 {
                     if(promotionSquares[i] == endSquare.position)
+                    {
+                        return false;
+                    }
+                }
+            }
+            //if promotion is not null but the pawn does not end up in a promotion square its ilegal
+            else if(promotion != null)
+            {
+                List<int> nonPromotionSquares = new List<int>();
+                nonPromotionSquares.AddRange(Ranks.allRanks[1]);
+                nonPromotionSquares.AddRange(Ranks.allRanks[2]);
+                nonPromotionSquares.AddRange(Ranks.allRanks[3]);
+                nonPromotionSquares.AddRange(Ranks.allRanks[4]);
+                nonPromotionSquares.AddRange(Ranks.allRanks[5]);
+                nonPromotionSquares.AddRange(Ranks.allRanks[6]);
+                
+                for(int i = 0; i < nonPromotionSquares.Count; i++)
+                {
+                    if(nonPromotionSquares[i] == endSquare.position)
                     {
                         return false;
                     }
@@ -929,7 +958,7 @@ namespace Board
             if(offset == PositionOffsets.rightOne*2 || offset == PositionOffsets.leftOne*2)
             {
                 //if the king is in check its not legal
-                if(isKingInCheck)
+                if(isKingInCheck())
                 {
                     return false;
                 }
@@ -938,7 +967,7 @@ namespace Board
                 if(offset == PositionOffsets.rightOne*2)
                 {
                     //if it would encounter another piece on its way or the king would be in check
-                    if(pieces[movingPiece.position+PositionOffsets.rightOne].piece != Piece.PIECENONE || revealsCheck(movingPiece, pieces[movingPiece.position+PositionOffsets.rightOne]))
+                    if(pieces[movingPiece.position+PositionOffsets.rightOne].piece != Piece.PIECENONE || revealsCheck(movingPiece, pieces[movingPiece.position+PositionOffsets.leftOne]))
                     {
                         return false;
                     }
@@ -1019,14 +1048,50 @@ namespace Board
             return false;
         }
 
+        //TODO: crashes the board on any move test this and find out if it is efficient
         //tests for checks to not make it possible to put your own king in check
         public static bool revealsCheck(Square movingPiece, Square endSquare)
         {
-            //TODO: look for checks
-            
-            //TODO: look to see if the king is already in check and if it is save it here
-            //isKingInCheck = true;
+            /*
+            bool result;
+            string oldFen = FenParser.createFenFromPosition();
 
+            
+            if(moveBeingCurrentlyChecked != null)
+            {
+                string moveToCheck =  moveBeingCurrentlyChecked;
+                moveBeingCurrentlyChecked = null;
+
+                makeMove(moveToCheck);
+            }
+            
+
+            result = MoveGenerator.couldOponentTakeYourKing(MoveGenerator.findAllLegalMoves());
+
+            FenParser.loadPositionFromFen(oldFen);
+
+            return result;
+            */
+            return false;
+        }
+        
+        //TODO: sometimes makes infinite loop test this and find out if it is efficient
+        //could the oponent take your king if it was his turn again ? then you are in check
+        public static bool isKingInCheck()
+        {
+            /*
+            bool result;
+            
+            //toggles turn without adding to the count
+            currentTurnColor = currentTurnColor == Piece.WHITE ? Piece.BLACK : Piece.WHITE;
+            
+            result =  MoveGenerator.couldOponentTakeYourKing(MoveGenerator.findAllLegalMoves());
+
+            //toggles turn back without adding or removing to the count
+            currentTurnColor = currentTurnColor == Piece.WHITE ? Piece.BLACK : Piece.WHITE;
+
+            return result;
+            */
             return false;
         }
     }

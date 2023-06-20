@@ -2,13 +2,6 @@ using System;
 using Board;
 using Util;
 
-public struct Move
-{
-    int startPosition;
-    char piece;
-    int pieceColor;
-    int endPosition;
-}
 
 namespace Moves
 {
@@ -47,10 +40,10 @@ namespace Moves
 
             return legalMoves;
         }
-
+        
         //TODO: test this
         //generates a list of all legal moves
-        private static List<string> generatePseudoLegalMoves()
+        public static List<string> generatePseudoLegalMoves()
         {
             List<string> pseudoLegalMoves = new List<string>();
 
@@ -92,7 +85,7 @@ namespace Moves
             return pseudoLegalMoves;
         }
 
-        private static bool couldOponentTakeYourKing(List<string> oponentResponses)
+        public static bool couldOponentTakeYourKing(List<string> oponentResponses)
         {
             for(int i = 0; i < oponentResponses.Count; i++)
             {

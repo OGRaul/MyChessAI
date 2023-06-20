@@ -71,7 +71,8 @@ namespace Tests
         [TestCase("e2e4")]
         [TestCase("a7a8q")] 
         [TestCase("g1f3 ")] 
-        //tests the move recognition to see if it can check for possible board moves (not necesarely legal moves, just board moves)
+        //tests the move recognition to see if it can check for possible board moves 
+        //(not necesarely legal moves, just board moves)
         public void AssertIsBoardMove(string move)
         {
             var result = moveInterpreter.isValidMove(move);
@@ -85,7 +86,6 @@ namespace Tests
         [TestCase("g7i8")] // non valid char
         [TestCase("h0h8")] //number to low
         [TestCase("g2h9 ")] //number to high
-        //tests that the move recognition is not giving false positives
         public void AssertIsNotBoardMove(string move)
         {
             var result = moveInterpreter.isValidMove(move);
