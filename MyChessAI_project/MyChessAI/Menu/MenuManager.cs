@@ -31,7 +31,6 @@ namespace Menu
                         BoardManager.drawBoard();
                         break;
                     case Commands.STARTAI:
-                        System.Console.WriteLine("AI should play the next move"); //TODO: for debug
                         AI.makeEngineMove();
                         break;
                     case Commands.STARTUCI:

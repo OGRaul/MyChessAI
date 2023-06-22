@@ -2,6 +2,7 @@
 using Menu;
 using Board;
 using Util;
+using Uci;
 
 namespace MyChessAI
 {
@@ -14,7 +15,6 @@ namespace MyChessAI
 
             //FenParser.loadPositionFromFen(FenStrings.PAWNTESTINGFEN); //Loads pawn testing board set up
             //FenParser.loadPositionFromFen(FenStrings.KNIGHTTESTINGFEN); //Loads knight testing board set up
-            //FenParser.loadPositionFromFen(FenStrings.KINGTESTINGFEN); //Loads king testing board set up
             //FenParser.loadPositionFromFen(FenStrings.QUEENTESTINGFEN); //Loads queen testing board set up
             //FenParser.loadPositionFromFen(FenStrings.BISHOPTESTINGFEN); //Loads bishop testing board set up
             //FenParser.loadPositionFromFen(FenStrings.ROOKTESTINGFEN); //Loads rook testing board set up

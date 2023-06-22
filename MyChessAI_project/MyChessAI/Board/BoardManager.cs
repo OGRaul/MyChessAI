@@ -56,7 +56,6 @@ namespace Board
 
         public static void drawBoard()
         {
-            //TODO: for debug
             printExtraFenData();
 
             int files = 8;
@@ -82,8 +81,6 @@ namespace Board
         {
             System.Console.WriteLine("---------------------------------");
             System.Console.WriteLine("DEBUG INFO: ");
-
-            System.Console.WriteLine("isKingInCheck: "+isKingInCheck()); //TODO: remove this
             
             string s = currentTurnColor == Piece.WHITE ? "White" : "Black";
             System.Console.WriteLine("Color of current turn: "+s);
@@ -928,23 +925,6 @@ namespace Board
         {
             int offset = endSquare.position - movingPiece.position; 
 
-            //TODO: implement the attacked check or if handled form revealsCheck() remove this instead
-            //checks if king would be in check in its new square
-            if(currentTurnColor == Piece.BLACK)
-            {
-                if(endSquare.isAtackedByWhite)
-                {
-                    return false;
-                }
-            }
-            else if ((currentTurnColor == Piece.WHITE))
-            {
-                if(endSquare.isAtackedByBlack)
-                {
-                    return false;
-                }
-            }
-
             //basic legal moves for the king
             for(int i = 0; i < PositionOffsets.allDirections.Length; i++)
             {
@@ -1048,50 +1028,17 @@ namespace Board
             return false;
         }
 
-        //TODO: crashes the board on any move test this and find out if it is efficient
+        //TODO: implement this
         //tests for checks to not make it possible to put your own king in check
         public static bool revealsCheck(Square movingPiece, Square endSquare)
         {
-            /*
-            bool result;
-            string oldFen = FenParser.createFenFromPosition();
-
-            
-            if(moveBeingCurrentlyChecked != null)
-            {
-                string moveToCheck =  moveBeingCurrentlyChecked;
-                moveBeingCurrentlyChecked = null;
-
-                makeMove(moveToCheck);
-            }
-            
-
-            result = MoveGenerator.couldOponentTakeYourKing(MoveGenerator.findAllLegalMoves());
-
-            FenParser.loadPositionFromFen(oldFen);
-
-            return result;
-            */
             return false;
         }
         
-        //TODO: sometimes makes infinite loop test this and find out if it is efficient
+        //TODO: implement this        
         //could the oponent take your king if it was his turn again ? then you are in check
         public static bool isKingInCheck()
         {
-            /*
-            bool result;
-            
-            //toggles turn without adding to the count
-            currentTurnColor = currentTurnColor == Piece.WHITE ? Piece.BLACK : Piece.WHITE;
-            
-            result =  MoveGenerator.couldOponentTakeYourKing(MoveGenerator.findAllLegalMoves());
-
-            //toggles turn back without adding or removing to the count
-            currentTurnColor = currentTurnColor == Piece.WHITE ? Piece.BLACK : Piece.WHITE;
-
-            return result;
-            */
             return false;
         }
     }
